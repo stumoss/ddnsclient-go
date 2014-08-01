@@ -1,7 +1,8 @@
 Dynamic DNS Updater Client
 ==========================
 
-A project to enable dynamic DNS updating exposed as a web service.
+A project to enable dynamic DNS updating exposed as a web service. Currently
+the only supported dynamic DNS provider supported is [ZoneEdit](http://www.zoneedit.com "ZoneEdit")
 
 To make use of this you must set the following environment variables:
 * DDNS_DOMAIN
@@ -14,10 +15,20 @@ package main
 
 import "bitbucket.org/stumoss/ddnsclient"
 
+var (
+    port *int
+)
+
+func init() {
+    port = flag.Int("port", 8080, "port to listen on")
+    flag.Parse()
+}
+
 func main() {
-    http.HandleFunc("/dns_update", ddnsclient.UpdateDnsEntries)
-    http.ListenAndServe(":" + strconv.Itoa(*port), nil)
-}```
+    http.HandleFunc("/dns_update", ddnsclient.DNSUpdateHandler)
+    ListenAndServe(":" + strconv.Itoa(*port), nil)
+}
+```
 
 Once you have the main app up and running you can use curl or a web browser
 to trigger the DNS update:

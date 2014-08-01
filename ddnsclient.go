@@ -1,36 +1,69 @@
 package ddnsclient
 
 import (
+	"fmt"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"runtime"
-	"net/url"
 )
 
-type DDNSUpdateArgs struct {
-	domain   string
-	username string
-	password string
-	url      *url.URL
-}
+var (
+	domain     string
+	username   string
+	password   string
+	updateURL  *url.URL
+	updateFunc DnsUpdateFunc
+)
 
-var dns DDNSUpdateArgs
+type DnsUpdateFunc func() (string, error)
 
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU() + 1)
 
-	dns.domain = os.Getenv("DDNS_DOMAIN")
-	if dns.domain == "" {
+	domain = os.Getenv("DDNS_DOMAIN")
+	if domain == "" {
 		log.Fatal("Please specify DDNS_DOMAIN environment variable")
 	}
 
-	dns.username = os.Getenv("DDNS_USERNAME")
-	if dns.username == "" {
+	username = os.Getenv("DDNS_USERNAME")
+	if username == "" {
 		log.Fatal("Please specify DDNS_USERNAME environment variable")
 	}
 
-	dns.password = os.Getenv("DDNS_PASSWORD")
-	if dns.password == "" {
+	password = os.Getenv("DDNS_PASSWORD")
+	if password == "" {
 		log.Fatal("Please specify DDNS_PASSWORD environment variable")
 	}
+}
+
+func DNSUpdate() (string, error) {
+	if updateFunc == nil {
+		log.Fatal("No valid DNS update function found")
+	}
+
+	result, err := updateFunc()
+	if err != nil {
+		return "", err
+	}
+
+	return result, nil
+}
+
+func DNSUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	if updateFunc == nil {
+		http.Error(w, "oops", http.StatusInternalServerError)
+		log.Fatal("No valid DNS update function found")
+	}
+
+	result, err := updateFunc()
+	if err != nil {
+		http.Error(w, "oops", http.StatusInternalServerError)
+		return
+	}
+
+	log.Println(result)
+	fmt.Fprintf(w, "%s\n", result)
+	return
 }
