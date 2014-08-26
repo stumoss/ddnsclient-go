@@ -1,6 +1,7 @@
 package ddnsclient
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -40,7 +41,7 @@ func init() {
 
 func DNSUpdate() (string, error) {
 	if updateFunc == nil {
-		log.Fatal("No valid DNS update function found")
+		return "", errors.New("No valid DNS update function found")
 	}
 
 	result, err := updateFunc()
@@ -52,12 +53,7 @@ func DNSUpdate() (string, error) {
 }
 
 func DNSUpdateHandler(w http.ResponseWriter, r *http.Request) {
-	if updateFunc == nil {
-		http.Error(w, "oops", http.StatusInternalServerError)
-		log.Fatal("No valid DNS update function found")
-	}
-
-	result, err := updateFunc()
+	result, err := DNSUpdate()
 	if err != nil {
 		http.Error(w, "oops", http.StatusInternalServerError)
 		return
