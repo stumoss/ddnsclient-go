@@ -1,5 +1,6 @@
 Dynamic DNS Updater Client
 ==========================
+[![Build Status](https://travis-ci.org/stumoss/ddnsclient.svg?branch=master)](https://travis-ci.org/stumoss/ddnsclient)
 
 A project to enable dynamic DNS updating exposed as a web service. Currently
 the only supported dynamic DNS provider supported is [ZoneEdit](http://www.zoneedit.com "ZoneEdit")
