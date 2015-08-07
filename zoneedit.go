@@ -9,7 +9,7 @@ import (
 	"regexp"
 )
 
-var responseRegex = regexp.MustCompile("<\\w.*=\\W(\\d+)\\W\\s+TEXT=\\W(\\w.*)\\.\\W")
+var responseRegex = regexp.MustCompile("<\\w.*=\"(\\d+)\"\\s+TEXT=\"(\\w[^\"]*)\"\\s+ZONE=\"([^\"]*)\">")
 
 func init() {
 	updateFunc = ZoneEditUpdate
@@ -51,7 +51,7 @@ func ZoneEditUpdate() (string, error) {
 	}
 
 	matches := responseRegex.FindStringSubmatch(string(bodyStr))
-	if len(matches) != 3 {
+	if len(matches) != 4 {
 		log.Printf("%s: failed to parse response: %s\n", domain, string(bodyStr))
 		return "", err
 	}
